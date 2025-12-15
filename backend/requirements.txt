@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+python-multipart
+# torch and torchvision are assumed to be installed for the specific platform (CUDA vs CPU)
+# but we can list them here too for safety, though usually better installed separately.
+torch
+torchvision
+pillow
