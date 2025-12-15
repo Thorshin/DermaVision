@@ -24,11 +24,11 @@ Ouvrez un terminal dans le dossier racine du projet :
 
 ```bash
 cd backend
-# Installer les dépendances
-pip install -r requirements.txt
+# Installer les dépendances (si nécessaire, assurez-vous d'avoir torch, torchvision, fastapi, uvicorn, pillow)
+pip install torch torchvision fastapi uvicorn python-multipart pillow
 
-# Lancer le serveur (Méthode recommandée)
-python main.py
+# Lancer le serveur
+uvicorn main:app --reload
 ```
 
 Le serveur sera accessible sur `http://localhost:8000`.

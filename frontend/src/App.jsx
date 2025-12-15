@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Sparkles, LogOut } from 'lucide-react';
 import ImageUpload from './components/ImageUpload';
 import PredictionResult from './components/PredictionResult';
-import { Sparkles } from 'lucide-react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
-function App() {
+// Main Analysis Component (Protected)
+function Dashboard() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { logout, user } = useAuth(); // Assuming useAuth provides logout
 
   // Use environment variable in production, but hardcode for local dev now
   const API_URL = "http://localhost:8000";
@@ -33,7 +39,7 @@ function App() {
       setResult(response.data);
     } catch (error) {
       console.error("Error analyzing image", error);
-      alert("Erreur lors de l'analyse de l'image. Vérifiez que le backend est lancé.");
+      alert("Erreur lors de l'analyse. Vérifiez votre connexion ou reconnectez-vous.");
     } finally {
       setLoading(false);
     }
@@ -41,21 +47,30 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-900 font-sans selection:bg-accent/30">
-      <div className="max-w-5xl mx-auto px-4 py-12 md:py-20">
+      <div className="max-w-5xl mx-auto px-4 py-8 md:py-12">
+        {/* Header with Logout */}
+        <div className="flex justify-between items-center mb-12">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-6 h-6 text-accent" />
+            <span className="font-bold text-lg text-slate-800">DermaVision</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-slate-500 hidden md:block">{user?.email}</span>
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Déconnexion</span>
+            </button>
+          </div>
+        </div>
 
         {/* Header */}
-        <header className="text-center mb-16">
-          <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-sm mb-6">
-            <Sparkles className="w-6 h-6 text-accent mr-2" />
-            <span className="font-bold text-xl tracking-tight text-slate-800">DermaVision</span>
-          </div>
+        <header className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">
-            Analyse Dermatologique <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-blue-600">Intelligente</span>
+            Analyse <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-blue-600">Intelligente</span>
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Utilisez notre puissant modèle d'intelligence artificielle pour analyser vos grains de beauté et lésions cutanées en quelques secondes.
-          </p>
         </header>
 
         {/* Main Content */}
@@ -69,7 +84,7 @@ function App() {
                 onClick={analyzeImage}
                 disabled={!selectedImage || loading}
                 className={`px-8 py-3 rounded-full font-semibold text-white shadow-lg shadow-accent/20 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
-                    ${!selectedImage ? 'bg-slate-300' : 'bg-gradient-to-r from-accent to-blue-500 hover:shadow-xl'}`}
+                      ${!selectedImage ? 'bg-slate-300' : 'bg-gradient-to-r from-accent to-blue-500 hover:shadow-xl'}`}
               >
                 {loading ? "Traitement..." : "Lancer l'Analyse"}
               </button>
@@ -78,13 +93,37 @@ function App() {
             <PredictionResult result={result} loading={loading} />
           </div>
         </main>
-
-        <footer className="text-center mt-20 text-slate-400 text-sm">
-          <p>© 2025 DermaVision AI Project. Ceci est un outil d'aide, pas un médecin.</p>
-        </footer>
-
       </div>
     </div>
+  );
+}
+
+// Protected Route Wrapper
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return children;
+};
+
+// Main App with Router
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
 
