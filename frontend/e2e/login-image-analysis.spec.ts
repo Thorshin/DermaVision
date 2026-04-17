@@ -55,7 +55,7 @@ test.describe('DermaVision – login, upload and logout @critical', () => {
     });
 
     await test.step('Submit login form', async () => {
-      await page.getByRole('button', { name: 'Se Connecter' }).click();
+      await page.getByRole('button', { name: 'Connexion' }).click();
       await expect(page).toHaveURL('/');
       await expect(page.getByRole('button', { name: "Lancer l'Analyse" })).toBeVisible();
     });
@@ -66,7 +66,7 @@ test.describe('DermaVision – login, upload and logout @critical', () => {
       await page.goto('/login');
       await page.getByPlaceholder('exemple@email.com').fill('yboufangha@outlook.fr');
       await page.locator('input[type="password"]').fill('yahya1234');
-      await page.getByRole('button', { name: 'Se Connecter' }).click();
+      await page.getByRole('button', { name: 'Connexion' }).click();
       await expect(page).toHaveURL('/');
     });
 
@@ -89,7 +89,7 @@ test.describe('DermaVision – login, upload and logout @critical', () => {
     });
 
     await test.step('Remove first image and verify upload area resets', async () => {
-      await page.locator('button:has(svg)').first().click();
+      await page.locator('main button:has(svg)').click();
       await expect(
         page.getByText('Cliquez pour upload ou glissez-déposez')
       ).toBeVisible();
@@ -119,7 +119,7 @@ test.describe('DermaVision – login, upload and logout @critical', () => {
       await page.goto('/login');
       await page.getByPlaceholder('exemple@email.com').fill('yboufangha@outlook.fr');
       await page.locator('input[type="password"]').fill('yahya1234');
-      await page.getByRole('button', { name: 'Se Connecter' }).click();
+      await page.getByRole('button', { name: 'Connexion' }).click();
       await expect(page).toHaveURL('/');
     });
 
