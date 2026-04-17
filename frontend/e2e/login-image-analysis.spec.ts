@@ -111,4 +111,62 @@ test.describe('DermaVision – login and image analysis @critical', () => {
       await expect(page.getByRole('heading', { name: 'Connexion' })).toBeVisible();
     });
   });
+
+  // ── Test 4: Full flow – upload, clear, re-upload, analyse twice, logout ────
+  test('should upload, clear, re-upload and analyse twice then logout @high', async ({ page }) => {
+    await test.step('Login', async () => {
+      await page.goto('/login');
+      await page.getByPlaceholder('exemple@email.com').fill('yboufangha@outlook.fr');
+      await page.locator('input[type="password"]').fill('yahya1234');
+      await page.getByRole('button', { name: 'Se Connecter' }).click();
+      await expect(page).toHaveURL('/');
+      await expect(page.getByRole('button', { name: "Lancer l'Analyse" })).toBeVisible();
+    });
+
+    await test.step('Upload first image and run first analysis', async () => {
+      await page.locator('input[type="file"]').setInputFiles({
+        name: 'test-skin-1.png',
+        mimeType: 'image/png',
+        buffer: Buffer.from(DUMMY_PNG_BASE64, 'base64'),
+      });
+      await expect(page.getByRole('img', { name: 'Preview' })).toBeVisible();
+
+      const analyseButton = page.getByRole('button', { name: "Lancer l'Analyse" });
+      await expect(analyseButton).toBeEnabled();
+      const firstPredict = page.waitForResponse('**/predict');
+      await analyseButton.click();
+      await firstPredict;
+      await expect(analyseButton).toBeEnabled();
+    });
+
+    await test.step('Clear image and upload a second image', async () => {
+      // The X button is the only button inside the preview container (sibling of the Preview img)
+      await page.getByRole('img', { name: 'Preview' }).locator('..').getByRole('button').click();
+      // Upload zone should reappear and analyse button should be disabled (no image)
+      await expect(page.getByText('Cliquez pour upload')).toBeVisible();
+      await expect(page.getByRole('button', { name: "Lancer l'Analyse" })).toBeDisabled();
+
+      await page.locator('input[type="file"]').setInputFiles({
+        name: 'test-skin-2.png',
+        mimeType: 'image/png',
+        buffer: Buffer.from(DUMMY_PNG_BASE64, 'base64'),
+      });
+      await expect(page.getByRole('img', { name: 'Preview' })).toBeVisible();
+    });
+
+    await test.step('Run second analysis', async () => {
+      const analyseButton = page.getByRole('button', { name: "Lancer l'Analyse" });
+      await expect(analyseButton).toBeEnabled();
+      const secondPredict = page.waitForResponse('**/predict');
+      await analyseButton.click();
+      await secondPredict;
+      await expect(analyseButton).toBeEnabled();
+    });
+
+    await test.step('Logout', async () => {
+      await page.getByRole('button', { name: 'Déconnexion' }).click();
+      await expect(page).toHaveURL(/\/login/);
+      await expect(page.getByRole('heading', { name: 'Connexion' })).toBeVisible();
+    });
+  });
 });
