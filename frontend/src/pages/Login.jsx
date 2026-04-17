@@ -59,7 +59,7 @@ export default function Login() {
                         type="submit"
                         className="w-full bg-gradient-to-r from-accent to-blue-600 text-white font-bold py-3 rounded-lg hover:shadow-lg transition-transform active:scale-95"
                     >
-                        Se Connecter
+                        Connexion
                     </button>
                 </form>
                 <p className="mt-6 text-center text-slate-600 text-sm">
