@@ -5,9 +5,21 @@ import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext(null);
 
+function getUserFromToken(storedToken) {
+    if (!storedToken) return null;
+    try {
+        const decoded = jwtDecode(storedToken);
+        if (decoded.exp * 1000 < Date.now()) return null;
+        return { email: decoded.sub };
+    } catch {
+        return null;
+    }
+}
+
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [token, setToken] = useState(localStorage.getItem("token"));
+    const storedToken = localStorage.getItem("token");
+    const [user, setUser] = useState(() => getUserFromToken(storedToken));
+    const [token, setToken] = useState(storedToken);
     const navigate = useNavigate();
 
     const API_URL = "http://localhost:8000";
@@ -41,8 +53,10 @@ export const AuthProvider = ({ children }) => {
                 }
             });
             const newToken = res.data.access_token;
+            const decoded = jwtDecode(newToken);
             localStorage.setItem("token", newToken);
             setToken(newToken);
+            setUser({ email: decoded.sub });
             axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
             navigate("/");
             return { success: true };
